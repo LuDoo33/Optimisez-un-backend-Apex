@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+    <testsuite name="force.apex" timestamp="2024-11-15T11:40:32+01:00" hostname="https://creative-shark-j0pki6-dev-ed.trailblaze.my.salesforce.com" tests="4" failures="0"  errors="0"  time="3.45">
+        <properties>
+            <property name="outcome" value="Passed"/>
+            <property name="testsRan" value="4"/>
+            <property name="passing" value="4"/>
+            <property name="failing" value="0"/>
+            <property name="skipped" value="0"/>
+            <property name="passRate" value="100%"/>
+            <property name="failRate" value="0%"/>
+            <property name="testStartTime" value="Nov 15, 2024 11:40 AM"/>
+            <property name="testExecutionTime" value="3.45 s"/>
+            <property name="testTotalTime" value="3.45 s"/>
+            <property name="commandTime" value="7.32 s"/>
+            <property name="hostname" value="https://creative-shark-j0pki6-dev-ed.trailblaze.my.salesforce.com"/>
+            <property name="orgId" value="00DQy00000FAIMQMA5"/>
+            <property name="username" value="ludo024@creative-shark-j0pki6.com"/>
+            <property name="testRunId" value="707Qy00000ETb7g"/>
+            <property name="userId" value="005Qy000009WbvJIAS"/>
+            <property name="testRunCoverage" value="100%"/>
+            <property name="orgWideCoverage" value="48%"/>
+        </properties>
+        <testcase name="testMultipleOrders" classname="TestCalculMontant" time="0.49">
+        </testcase>
+        <testcase name="testNetAmountCalculation" classname="TestCalculMontant" time="0.51">
+        </testcase>
+        <testcase name="test" classname="TestUpdateAccountCA" time="0.9">
+        </testcase>
+        <testcase name="testWith101Orders" classname="TestUpdateAccountCA" time="1.56">
+        </testcase>
+    </testsuite>
+</testsuites>

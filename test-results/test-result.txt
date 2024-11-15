@@ -1,0 +1,45 @@
+=== [94mTest Reports[39m
+FORMAT  FILE
+──────  ──────────────────────────────────────────────────
+txt     test-results\test-result.txt
+txt     test-results\test-run-id.txt
+junit   test-results\test-result-707Qy00000ETb7g-junit.xml
+json    test-results\test-result-707Qy00000ETb7g.json
+json    test-results\test-result-codecoverage.json
+
+=== [94mApex Code Coverage[39m
+ID                  NAME             % COVERED  UNCOVERED LINES
+──────────────────  ───────────────  ─────────  ───────────────
+01qQy000000udbNIAQ  CalculMontant    [32m100%[39m
+01qQy000000udbOIAQ  UpdateAccountCA  [32m100%[39m
+
+=== [94mTest Results[39m
+TEST NAME                                   OUTCOME  MESSAGE  RUNTIME (MS)
+──────────────────────────────────────────  ───────  ───────  ────────────
+TestCalculMontant.testMultipleOrders        [32mPass[39m              486
+TestCalculMontant.testNetAmountCalculation  [32mPass[39m              508
+TestUpdateAccountCA.test                    [32mPass[39m              903
+TestUpdateAccountCA.testWith101Orders       [32mPass[39m              1557
+
+=== [94mTest Summary[39m
+NAME                 VALUE
+───────────────────  ──────────────────────────────────────────────────────────────────
+Outcome              Passed
+Tests Ran            4
+Passing              4
+Failing              0
+Skipped              0
+Pass Rate            100%
+Fail Rate            0%
+Test Start Time      Nov 15, 2024 11:40 AM
+Test Execution Time  3454 ms
+Test Total Time      3454 ms
+Command Time         7318 ms
+Hostname             https://creative-shark-j0pki6-dev-ed.trailblaze.my.salesforce.com
+Org Id               00DQy00000FAIMQMA5
+Username             ludo024@creative-shark-j0pki6.com
+Test Run Id          707Qy00000ETb7g
+User Id              005Qy000009WbvJIAS
+Test Run Coverage    100%
+Org Wide Coverage    48%
+
