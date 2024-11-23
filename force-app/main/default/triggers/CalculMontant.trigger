@@ -1,4 +1,5 @@
 trigger CalculMontant on Order (before update) {
+    OrderTriggerHandler.beforeUpdate(Trigger.new);
     for (Order newOrder : Trigger.new) {
         // Utiliser un prix par défaut de 0.0 si le champ est null.
         Decimal totalAmount = (newOrder.TotalAmount == null) ? 0 : newOrder.TotalAmount;
@@ -13,3 +14,5 @@ trigger CalculMontant on Order (before update) {
         System.debug('NetAmount: ' + newOrder.NetAmount__c);
     }
 }
+
+

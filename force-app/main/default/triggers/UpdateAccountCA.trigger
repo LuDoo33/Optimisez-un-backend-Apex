@@ -1,4 +1,5 @@
 trigger UpdateAccountCA on Order (after update) {
+    OrderTriggerHandler.afterUpdate(Trigger.new);
     // Utilisation d'un ensemble pour stocker les IDs des comptes et une carte pour les montants totaux
     Set<Id> accountIds = new Set<Id>();
     Map<Id, Decimal> accountSalesMap = new Map<Id, Decimal>();

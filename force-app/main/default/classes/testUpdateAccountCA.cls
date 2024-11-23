@@ -28,7 +28,7 @@ private class TestUpdateAccountCA {
             AccountId = acc1.Id,
             Pricebook2Id = pricebookId,
             EffectiveDate = Date.today(),
-            Status = 'Ordered' 
+            Status = 'Ordered'
         );
         insert o1;
 
@@ -71,7 +71,7 @@ private class TestUpdateAccountCA {
                 AccountId = acc2.Id,
                 Pricebook2Id = pricebookId,
                 EffectiveDate = Date.today(),
-                Status = 'Ordered' 
+                Status = 'Ordered'
             );
             orders.add(o);
         }
@@ -97,7 +97,7 @@ private class TestUpdateAccountCA {
             AccountId = acc2.Id,
             Pricebook2Id = pricebookId,
             EffectiveDate = Date.today(),
-            Status = 'Draft' // Statut initial différent 
+            Status = 'Draft' // Statut initial différent
         );
         insert newOrder;
 
@@ -121,8 +121,10 @@ private class TestUpdateAccountCA {
 
         // Vérifier que le chiffre d'affaires a été correctement mis à jour
         Account accountAfterUpdate = [SELECT Chiffre_d_affaire__c FROM Account WHERE Id = :acc2.Id];
-        Decimal expectedChiffreAffaire = accountBeforeUpdate.Chiffre_d_affaire__c + (10 * 300); 
-        System.assertEquals(expectedChiffreAffaire, accountAfterUpdate.Chiffre_d_affaire__c, 
+        Decimal expectedChiffreAffaire = accountBeforeUpdate.Chiffre_d_affaire__c + (10 * 300);
+        System.debug('Expected Chiffre d\'affaire: ' + expectedChiffreAffaire);
+        System.debug('Actual Chiffre d\'affaire: ' + accountAfterUpdate.Chiffre_d_affaire__c);
+        System.assertEquals(expectedChiffreAffaire, accountAfterUpdate.Chiffre_d_affaire__c,
                             'Le chiffre d\'affaires doit être correctement mis à jour après modification.');
 
         // Vérifier le nombre total de commandes
@@ -130,4 +132,3 @@ private class TestUpdateAccountCA {
         System.assertEquals(101, acc2.Orders.size(), 'Le compte doit avoir 101 commandes.');
     }
 }
-
