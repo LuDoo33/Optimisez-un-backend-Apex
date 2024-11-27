@@ -4,22 +4,27 @@ private class TestUpdateAccountCA {
     @isTest
     static void test() {
         // Créer un compte
-        Account acc1 = TestDataFactory.createAccount('Test Account 1');
-        
+        List<Account> accounts = TestDataFactory.createAccounts(1, 'Test Account 1');
+        Account acc1 = accounts[0];
+
         // Créer un produit
-        Product2 pd1 = TestDataFactory.createProduct('Chemise Verte longue XYX', 'Chemise');
-        
+        List<Product2> products = TestDataFactory.createProducts(1, 'Chemise Verte longue XYX', 'Chemise');
+        Product2 pd1 = products[0];
+
         // Créer une entrée de Pricebook
-        PricebookEntry pbe = TestDataFactory.createPricebookEntry(pd1.Id, 1020, true);
+        List<PricebookEntry> pricebookEntries = TestDataFactory.createPricebookEntries(products, 1020.0, true);
+        PricebookEntry pbe = pricebookEntries[0];
 
         // Créer une commande et des éléments de commande
-        Order o1 = TestDataFactory.createOrder(acc1.Id, Test.getStandardPricebookId(), 'Ordered');
-        TestDataFactory.createOrderItem(o1.Id, pbe.Id, 10, 150);
-        TestDataFactory.createOrderItem(o1.Id, pbe.Id, 20, 1000);
+        List<Order> orders = TestDataFactory.createOrders(accounts, Test.getStandardPricebookId(), 'Ordered');
+        Order o1 = orders[0];
+
+        TestDataFactory.createOrderItems(orders, pricebookEntries, 10, 150.0);
+        TestDataFactory.createOrderItems(orders, pricebookEntries, 20, 1000.0);
 
         // Récupérer l'Account pour vérifier la mise à jour du chiffre d'affaires
         Account updatedAccount = [SELECT Chiffre_d_affaire__c FROM Account WHERE Id = :acc1.Id];
-        
+
         // Vérification
         System.assertNotEquals(null, updatedAccount.Chiffre_d_affaire__c, 'Le chiffre d\'affaires doit être mis à jour.');
     }
@@ -27,13 +32,16 @@ private class TestUpdateAccountCA {
     @isTest
     static void testWith101Orders() {
         // Créer un compte
-        Account acc2 = TestDataFactory.createAccount('Test Account 2');
-        
+        List<Account> accounts = TestDataFactory.createAccounts(1, 'Test Account 2');
+        Account acc2 = accounts[0];
+
         // Créer un produit
-        Product2 pd2 = TestDataFactory.createProduct('Pantalon Bleu 3XL', 'Pantalon');
-        
+        List<Product2> products = TestDataFactory.createProducts(1, 'Pantalon Bleu 3XL', 'Pantalon');
+        Product2 pd2 = products[0];
+
         // Créer une entrée de Pricebook
-        PricebookEntry pbe = TestDataFactory.createPricebookEntry(pd2.Id, 500, true);
+        List<PricebookEntry> pricebookEntries = TestDataFactory.createPricebookEntries(products, 500.0, true);
+        PricebookEntry pbe = pricebookEntries[0];
 
         // Créer 100 commandes avec EffectiveDate
         List<Order> orders = new List<Order>();
@@ -68,11 +76,11 @@ private class TestUpdateAccountCA {
             EffectiveDate = today  // Assigner EffectiveDate ici
         );
         insert newOrder;  // Insertion de la nouvelle commande
-        TestDataFactory.createOrderItem(newOrder.Id, pbe.Id, 10, 300);  // Ajouter des éléments de commande
+        TestDataFactory.createOrderItems(new List<Order>{newOrder}, pricebookEntries, 10, 300.0);  // Ajouter des éléments de commande
 
         // Récupérer le chiffre d'affaires avant la mise à jour
         Account accountBeforeUpdate = [SELECT Chiffre_d_affaire__c FROM Account WHERE Id = :acc2.Id];
-        
+
         // Mettre à jour le statut de la commande
         newOrder.Status = 'Ordered';
         update newOrder;
@@ -80,7 +88,7 @@ private class TestUpdateAccountCA {
         // Vérifier le chiffre d'affaires après la mise à jour
         Account accountAfterUpdate = [SELECT Chiffre_d_affaire__c FROM Account WHERE Id = :acc2.Id];
         Decimal expectedChiffreAffaire = accountBeforeUpdate.Chiffre_d_affaire__c + (10 * 300);
-        
+
         System.assertEquals(expectedChiffreAffaire, accountAfterUpdate.Chiffre_d_affaire__c, 'Le chiffre d\'affaires doit être mis à jour.');
 
         // Vérification du nombre de commandes
