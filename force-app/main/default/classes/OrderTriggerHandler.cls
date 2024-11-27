@@ -23,8 +23,8 @@ public class OrderTriggerHandler {
      */
     private static void calculateNetAmount(List<Order> orders) {
         for (Order order : orders) {
-            Decimal totalAmount = (order.TotalAmount == null) ? 0 : order.TotalAmount;
-            Decimal shipmentCost = (order.ShipmentCost__c == null) ? 0 : order.ShipmentCost__c;
+            Decimal totalAmount = getDecimalValue(order.TotalAmount);
+            Decimal shipmentCost = getDecimalValue(order.ShipmentCost__c);
             order.NetAmount__c = totalAmount - shipmentCost;
 
             // Logs de débogage
@@ -54,6 +54,16 @@ public class OrderTriggerHandler {
      */
     private static void updateAccountSales(Set<Id> accountIds) {
         // Étape 1 : Récupérer les commandes liées aux comptes concernés
+        Map<Id, Decimal> accountSalesMap = getAccountSalesMap(accountIds);
+
+        // Étape 2 : Mise à jour des comptes avec les chiffres d'affaires calculés
+        updateAccounts(accountSalesMap);
+    }
+
+    /**
+     * Récupère la carte des ventes totales par compte.
+     */
+    private static Map<Id, Decimal> getAccountSalesMap(Set<Id> accountIds) {
         Map<Id, Decimal> accountSalesMap = new Map<Id, Decimal>();
         List<Order> relatedOrders = [
             SELECT AccountId, TotalAmount
@@ -61,7 +71,6 @@ public class OrderTriggerHandler {
             WHERE AccountId IN :accountIds AND Status = 'Ordered'
         ];
 
-        // Étape 2 : Calcul des ventes totales pour chaque compte
         for (Order order : relatedOrders) {
             if (order.TotalAmount != null) {
                 Decimal currentTotal = accountSalesMap.containsKey(order.AccountId)
@@ -70,19 +79,38 @@ public class OrderTriggerHandler {
                 accountSalesMap.put(order.AccountId, currentTotal + order.TotalAmount);
             }
         }
+        return accountSalesMap;
+    }
 
-        // Étape 3 : Mise à jour des comptes avec les chiffres d'affaires calculés
-        List<Account> accountsToUpdate = [SELECT Id, Chiffre_d_affaire__c FROM Account WHERE Id IN :accountIds];
-
-        for (Account acc : accountsToUpdate) {
-            Decimal updatedSales = accountSalesMap.containsKey(acc.Id) 
-                ? accountSalesMap.get(acc.Id)
-                : 0;
-            acc.Chiffre_d_affaire__c = updatedSales;
-        }
+    /**
+     * Met à jour les comptes avec les chiffres d'affaires calculés.
+     */
+    private static void updateAccounts(Map<Id, Decimal> accountSalesMap) {
+        List<Account> accountsToUpdate = buildAccountsToUpdate(accountSalesMap);
 
         if (!accountsToUpdate.isEmpty()) {
             update accountsToUpdate;
         }
+    }
+
+    /**
+     * Construit la liste des comptes à mettre à jour.
+     */
+    private static List<Account> buildAccountsToUpdate(Map<Id, Decimal> accountSalesMap) {
+        List<Account> accountsToUpdate = new List<Account>();
+
+        for (Id accountId : accountSalesMap.keySet()) {
+            Decimal updatedSales = accountSalesMap.get(accountId);
+            accountsToUpdate.add(new Account(Id = accountId, Chiffre_d_affaire__c = updatedSales));
+        }
+
+        return accountsToUpdate;
+    }
+
+    /**
+     * Récupère la valeur décimale d'un champ, en retournant 0 si la valeur est nulle.
+     */
+    private static Decimal getDecimalValue(Decimal value) {
+        return value != null ? value : 0;
     }
 }
