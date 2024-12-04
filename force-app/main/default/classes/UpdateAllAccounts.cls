@@ -8,6 +8,7 @@ global class UpdateAllAccounts implements Database.Batchable<sObject>, Database.
     private String updatedAccountNames = ''; // Chaîne pour stocker les noms des comptes mis à jour
 
     global Database.QueryLocator start(Database.BatchableContext info) {
+        // S'assurer que le champ Chiffre_d_affaire__c est bien inclus dans la requête SOQL
         return Database.getQueryLocator(
             'SELECT Id, Name, Chiffre_d_affaire__c FROM Account WHERE Id IN (SELECT AccountId FROM Order WHERE Status = \'Ordered\')'
         );
@@ -18,18 +19,23 @@ global class UpdateAllAccounts implements Database.Batchable<sObject>, Database.
         Integer localOrdersProcessed = 0; // Compteur local pour les commandes réellement traitées
         Decimal localRevenueUpdated = 0; // Montant local du chiffre d'affaires mis à jour
 
+        // Recharger explicitement les comptes avec leurs champs nécessaires
+        scope = [
+            SELECT Id, Name, Chiffre_d_affaire__c FROM Account WHERE Id IN :scope
+        ];
+
         // Liste des IDs des comptes à traiter
         Set<Id> accountIds = new Map<Id, Account>(scope).keySet();
 
-        // Calculer le chiffre d'affaires et traiter les commandes
+        // Calculer le chiffre d'affaires pour chaque compte
         Map<Id, Decimal> accountRevenueMap = calculateAnnualRevenue(accountIds);
 
-        // Mise à jour des comptes et création des enregistrements de suivi
+        // Liste pour stocker les comptes à mettre à jour
         List<Account> accountsToUpdate = new List<Account>();
         for (Account acc : scope) {
             if (accountRevenueMap.containsKey(acc.Id)) {
                 Decimal newRevenue = accountRevenueMap.get(acc.Id);
-                if (acc.Chiffre_d_affaire__c != newRevenue) { // Vérification : mise à jour nécessaire ?
+                if (acc.Chiffre_d_affaire__c != newRevenue) { // Vérification si une mise à jour est nécessaire
                     Decimal oldRevenue = acc.Chiffre_d_affaire__c != null ? acc.Chiffre_d_affaire__c : 0;
                     acc.Chiffre_d_affaire__c = newRevenue;
                     accountsToUpdate.add(acc);
@@ -40,16 +46,16 @@ global class UpdateAllAccounts implements Database.Batchable<sObject>, Database.
                     }
                     updatedAccountNames += acc.Name;
 
-                    // Mettre à jour le montant du chiffre d'affaires mis à jour
+                    // Calculer l'évolution du chiffre d'affaires
                     localRevenueUpdated += newRevenue - oldRevenue;
 
-                    // Créer un enregistrement de suivi pour chaque compte réellement mis à jour
+                    // Ajouter un enregistrement de suivi pour chaque compte mis à jour
                     suiviBatchRecords.add(new Suivi_des_Batchs__c(
                         Compte__c = acc.Id,
                         Chiffre_d_affaire_mis_a_jour__c = newRevenue
                     ));
-                    localRecordsProcessed++; // Incrémenter seulement pour les mises à jour effectives
-                    localOrdersProcessed++; // Incrémenter pour chaque commande qui entraîne une mise à jour
+                    localRecordsProcessed++; // Compter les comptes réellement mis à jour
+                    localOrdersProcessed++; // Compter les commandes traitées
                 }
             }
         }
@@ -59,12 +65,12 @@ global class UpdateAllAccounts implements Database.Batchable<sObject>, Database.
             update accountsToUpdate;
         }
 
-        // Mettre à jour les compteurs globaux
+        // Mise à jour des compteurs globaux
         globalRecordsProcessed += localRecordsProcessed;
         globalOrdersProcessed += localOrdersProcessed;
         globalRevenueUpdated += localRevenueUpdated;
 
-        // Insérer un enregistrement de suivi pour cette exécution
+        // Enregistrer un suivi pour cette exécution de batch
         suiviBatchRecords.add(new Suivi_des_Batchs__c(
             Nom_du_Batch__c = 'UpdateAllAccounts',
             Statut__c = 'Complété',
@@ -76,7 +82,7 @@ global class UpdateAllAccounts implements Database.Batchable<sObject>, Database.
     }
 
     global void finish(Database.BatchableContext info) {
-        // Créer un enregistrement de suivi global pour le batch
+        // Créer un enregistrement de suivi global pour l'exécution du batch
         AsyncApexJob job = [SELECT Status, CreatedDate, CompletedDate FROM AsyncApexJob WHERE Id = :info.getJobId()];
         suiviBatchRecords.add(new Suivi_des_Batchs__c(
             Nom_du_Batch__c = 'UpdateAllAccounts',
@@ -89,19 +95,19 @@ global class UpdateAllAccounts implements Database.Batchable<sObject>, Database.
             Montant_du_CA_mis_a_jour__c = String.valueOf(globalRevenueUpdated)
         ));
 
-        // Insérer les enregistrements de suivi
+        // Insérer tous les enregistrements de suivi
         if (!suiviBatchRecords.isEmpty()) {
             insert suiviBatchRecords;
         }
 
-        // Envoyer l'email de notification
+        // Envoyer l'email de notification à la fin du batch
         sendCompletionEmail();
     }
 
     private Map<Id, Decimal> calculateAnnualRevenue(Set<Id> accountIds) {
         Map<Id, Decimal> revenueMap = new Map<Id, Decimal>();
 
-        // Récupérer les produits commandés liés aux comptes
+        // Récupérer les OrderItems associés aux comptes, avec leur prix et quantité
         List<OrderItem> orderItems = [
             SELECT Order.AccountId, UnitPrice, Quantity
             FROM OrderItem
@@ -120,6 +126,7 @@ global class UpdateAllAccounts implements Database.Batchable<sObject>, Database.
     }
 
     private void sendCompletionEmail() {
+        // Créer un email de notification sur la fin du batch
         Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
         email.setToAddresses(new String[] { notificationEmail });
         email.setSubject('Mise à jour des comptes - Résultats');
