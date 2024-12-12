@@ -107,4 +107,28 @@ private class TestUpdateAllAccounts {
         acc2 = [SELECT Id, (SELECT Id FROM Orders) FROM Account WHERE Id = :acc2.Id];
         System.assertEquals(101, acc2.Orders.size(), 'Le compte doit avoir 101 commandes.');
     }
+
+    @isTest
+    static void testExecute() {
+        // Création des comptes
+        List<Account> accounts = TestDataFactory.createAccounts(1, 'Test Account');
+        
+        // Création des produits
+        List<Product2> products = TestDataFactory.createProducts(1, 'Test Product', 'Test Family');
+        
+        // Utilisation du Pricebook2 standard existant
+        Id standardPricebookId = Test.getStandardPricebookId();
+        
+        // Création des entrées dans le Pricebook
+        List<PricebookEntry> pricebookEntries = TestDataFactory.createPricebookEntries(products, 10, true);
+        
+        // Création des commandes avec l'ID du Pricebook standard
+        List<Order> orders = TestDataFactory.createOrders(accounts, standardPricebookId, 'Ordered');
+        
+        // Vérification des commandes
+        System.assertEquals(1, orders.size(), 'Une commande doit être créée');
+        System.assertNotEquals(null, orders[0].EffectiveDate, 'La date d\'effet doit être définie');
+        
+        // Vérification supplémentaire selon vos besoins
+    }
 }
