@@ -1,5 +1,5 @@
 @isTest
-private class TestUpdateAccountCA {
+private class TestUpdateAllAccounts {
 
     @isTest
     static void test() {
@@ -21,6 +21,12 @@ private class TestUpdateAccountCA {
 
         TestDataFactory.createOrderItems(orders, pricebookEntries, 10, 150.0);
         TestDataFactory.createOrderItems(orders, pricebookEntries, 20, 1000.0);
+
+        // Exécuter le batch
+        Test.startTest();
+        UpdateAllAccounts batch = new UpdateAllAccounts();
+        Database.executeBatch(batch);
+        Test.stopTest();
 
         // Récupérer l'Account pour vérifier la mise à jour du chiffre d'affaires
         Account updatedAccount = [SELECT Chiffre_d_affaire__c FROM Account WHERE Id = :acc1.Id];
@@ -84,6 +90,12 @@ private class TestUpdateAccountCA {
         // Mettre à jour le statut de la commande
         newOrder.Status = 'Ordered';
         update newOrder;
+
+        // Exécuter le batch
+        Test.startTest();
+        UpdateAllAccounts batch = new UpdateAllAccounts();
+        Database.executeBatch(batch);
+        Test.stopTest();
 
         // Vérifier le chiffre d'affaires après la mise à jour
         Account accountAfterUpdate = [SELECT Chiffre_d_affaire__c FROM Account WHERE Id = :acc2.Id];

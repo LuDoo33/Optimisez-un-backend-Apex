@@ -30,7 +30,7 @@ public class TestCreate700Accounts {
         UpdateAllAccounts batch = new UpdateAllAccounts();
 
         // Récupérer les comptes à mettre à jour (au début)
-        List<Account> accountsToUpdate = [SELECT Id FROM Account WHERE Name LIKE 'Test Account%'];
+        List<Account> accountsToUpdate = [SELECT Id, Name, Chiffre_d_affaire__c FROM Account WHERE Name LIKE 'Test Account%'];
         System.debug('Accounts to update: ' + accountsToUpdate.size());
 
         // Vérifier que nous avons bien 700 comptes à traiter
