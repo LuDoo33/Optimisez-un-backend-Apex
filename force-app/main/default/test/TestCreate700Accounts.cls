@@ -27,7 +27,7 @@ public class TestCreate700Accounts {
         System.assertEquals(700, orderItems.size(), 'Le nombre d\'éléments de commande insérés doit être 700.');
 
         // Simuler l'exécution du batch dans la méthode de test (sans utiliser executeBatch)
-        UpdateAllAccounts batch = new UpdateAllAccounts();
+        UpdateAllAccountsBatch batch = new UpdateAllAccountsBatch();
 
         // Récupérer les comptes à mettre à jour (au début)
         List<Account> accountsToUpdate = [SELECT Id, Name, Chiffre_d_affaire__c FROM Account WHERE Name LIKE 'Test Account%'];
