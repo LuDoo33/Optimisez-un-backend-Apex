@@ -6,10 +6,10 @@ public class OrderTriggerHandler {
     }
 
     public static void afterUpdate(List<Order> newOrders) {
-        // Étape 1 : Identifier les comptes concernés
+        // Étape 2 : Identifier les comptes concernés
         Set<Id> accountIds = getAccountIds(newOrders);
 
-        // Étape 2 : Calculer les ventes totales par compte et mettre à jour les comptes
+        // Étape 3 : Calculer les ventes totales par compte et mettre à jour les comptes
         if (!accountIds.isEmpty()) {
             updateAccountSales(accountIds);
         }
@@ -18,7 +18,7 @@ public class OrderTriggerHandler {
     // **Méthodes auxiliaires**
 
     /**
-     * Calcule le montant net pour chaque commande.
+     * Étape 1 : Calcule le montant net pour chaque commande.
      * Montant net = TotalAmount - ShipmentCost.
      */
     private static void calculateNetAmount(List<Order> orders) {
@@ -36,7 +36,7 @@ public class OrderTriggerHandler {
     }
 
     /**
-     * Récupère l'ensemble des IDs de comptes liés aux commandes.
+     * Étape 2 : Récupère l'ensemble des IDs de comptes liés aux commandes.
      */
     private static Set<Id> getAccountIds(List<Order> orders) {
         Set<Id> accountIds = new Set<Id>();
@@ -49,14 +49,14 @@ public class OrderTriggerHandler {
     }
 
     /**
-     * Met à jour les ventes totales (chiffre d'affaires) des comptes.
+     * Étape 3 : Met à jour les ventes totales (chiffre d'affaires) des comptes.
      * Se base sur les commandes liées ayant le statut 'Ordered'.
      */
     private static void updateAccountSales(Set<Id> accountIds) {
-        // Étape 1 : Récupérer les commandes liées aux comptes concernés
+        // Étape 3.1 : Récupérer les commandes liées aux comptes concernés
         Map<Id, Decimal> accountSalesMap = getAccountSalesMap(accountIds);
 
-        // Étape 2 : Mise à jour des comptes avec les chiffres d'affaires calculés
+        // Étape 3.2 : Mise à jour des comptes avec les chiffres d'affaires calculés
         updateAccounts(accountSalesMap);
     }
 
@@ -94,7 +94,7 @@ public class OrderTriggerHandler {
     }
 
     /**
-     * Construit la liste des comptes à mettre à jour.
+     * Construit la liste des comptes à mettre à jour avec les ventes totales calculées.
      */
     private static List<Account> buildAccountsToUpdate(Map<Id, Decimal> accountSalesMap) {
         List<Account> accountsToUpdate = new List<Account>();

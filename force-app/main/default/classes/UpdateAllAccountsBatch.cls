@@ -13,19 +13,24 @@ public class UpdateAllAccountsBatch implements Database.Batchable<sObject>, Data
     }
 
     public void execute(Database.BatchableContext info, List<Account> scope) {
+        // Étape 1 : Identifier
         Set<Id> accountIds = new Set<Id>();
         for (Account acc : scope) {
             accountIds.add(acc.Id);
         }
 
+        // Étape 2 : Organiser
         Map<Id, List<OrderItem>> orderItemsByAccountId = new Map<Id, List<OrderItem>>();
-        for (OrderItem orderItem : [SELECT Id, Order.AccountId, UnitPrice, Quantity FROM OrderItem WHERE Order.AccountId IN :accountIds AND Order.Status = 'Ordered']) {
+        for (OrderItem orderItem : [SELECT Id, Order.AccountId, UnitPrice, Quantity 
+                                    FROM OrderItem 
+                                    WHERE Order.AccountId IN :accountIds AND Order.Status = 'Ordered']) {
             if (!orderItemsByAccountId.containsKey(orderItem.Order.AccountId)) {
                 orderItemsByAccountId.put(orderItem.Order.AccountId, new List<OrderItem>());
             }
             orderItemsByAccountId.get(orderItem.Order.AccountId).add(orderItem);
         }
 
+        // Étape 3 : Calculer
         List<Account> accountsToUpdate = new List<Account>();
         Integer localRecordsProcessed = 0;
         Integer localOrdersProcessed = 0;
@@ -39,11 +44,12 @@ public class UpdateAllAccountsBatch implements Database.Batchable<sObject>, Data
             }
         }
 
-        // Mise à jour en une seule fois
+        // Étape 4 : Mettre à jour
         if (!accountsToUpdate.isEmpty()) {
             update accountsToUpdate;
         }
 
+        // Mise à jour des compteurs globaux
         globalRecordsProcessed += localRecordsProcessed;
         globalOrdersProcessed += localOrdersProcessed;
         globalRevenueUpdated += localRevenueUpdated;
@@ -51,10 +57,13 @@ public class UpdateAllAccountsBatch implements Database.Batchable<sObject>, Data
 
     public void finish(Database.BatchableContext info) {
         AsyncApexJob job = [SELECT Status, CreatedDate, CompletedDate FROM AsyncApexJob WHERE Id = :info.getJobId()];
+        // Code additionnel pour la fin (logs, notification, etc.) peut être ajouté ici
     }
 
-    // Changer la visibilité de la méthode à public
-    public void updateAccountRevenue(Account acc, Decimal newRevenue, List<Account> accountsToUpdate, Decimal localRevenueUpdated, Integer localRecordsProcessed, Integer localOrdersProcessed) {
+    // Méthode pour gérer la mise à jour des comptes
+    public void updateAccountRevenue(Account acc, Decimal newRevenue, List<Account> accountsToUpdate, 
+                                     Decimal localRevenueUpdated, Integer localRecordsProcessed, 
+                                     Integer localOrdersProcessed) {
         Decimal oldRevenue = acc.Chiffre_d_affaire__c != null ? acc.Chiffre_d_affaire__c : 0;
         if (acc.Chiffre_d_affaire__c != newRevenue) {
             acc.Chiffre_d_affaire__c = newRevenue;

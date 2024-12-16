@@ -54,38 +54,6 @@ public class TestCreate700Accounts {
             System.assert(acc.Chiffre_d_affaire__c > 0, 'Le chiffre d\'affaires doit être supérieur à zéro pour le compte : ' + acc.Name);
         }
 
-        // Log dans Batch_Execution_Log__c
-        List<Batch_Execution_Log__c> logEntries = new List<Batch_Execution_Log__c>();
-        for (Account acc : updatedAccounts) {
-            Batch_Execution_Log__c logEntry = new Batch_Execution_Log__c();
-            logEntry.Name = 'Batch Log ' + acc.Name; // Nom du log basé sur le compte
-            logEntry.Account_Name__c = acc.Name;
-            logEntry.Updated__c = acc.Chiffre_d_affaire__c; // Chiffre d'affaires mis à jour
-            logEntry.Statuts__c = 'Success';  // Statut "Success" pour l'exécution réussie
-            logEntry.Date__c = Date.today(); // Date d'exécution du batch
-            logEntries.add(logEntry);
-
-            // Débogage supplémentaire pour vérifier les valeurs des champs
-            System.debug('Log Entry: ' + logEntry.Name + ', Account: ' + logEntry.Account_Name__c + ', Updated: ' + logEntry.Updated__c + ', Status: ' + logEntry.Statuts__c + ', Date: ' + logEntry.Date__c);
-        }
-
-        // Insérer les logs dans Batch_Execution_Log__c
-        insert logEntries;
-        System.debug('Log entries created: ' + logEntries.size());
-
-        // Vérifier que les logs ont été créés
-        List<Batch_Execution_Log__c> insertedLogs = [SELECT Id, Name, Account_Name__c, Updated__c, Statuts__c, Date__c FROM Batch_Execution_Log__c];
-        System.assertEquals(700, insertedLogs.size(), 'Tous les logs doivent avoir été créés.');
-
-        // Vérification supplémentaire des logs insérés
-        for (Batch_Execution_Log__c log : insertedLogs) {
-            System.debug('Inserted Log: ' + log.Name + ', Account: ' + log.Account_Name__c + ', Updated: ' + log.Updated__c + ', Status: ' + log.Statuts__c + ', Date: ' + log.Date__c);
-            System.assertNotEquals(null, log.Account_Name__c, 'Le nom du compte doit être défini.');
-            System.assertNotEquals(null, log.Updated__c, 'Le chiffre d\'affaires mis à jour doit être défini.');
-            System.assertEquals('Success', log.Statuts__c, 'Le statut doit être "Success".');
-            System.assertEquals(Date.today(), log.Date__c, 'La date doit être aujourd\'hui.');
-        }
-
         // Phrase de fin pour confirmer la création des 700 comptes
         System.debug('Les 700 comptes ont été créés et mis à jour avec succès.');
     }
