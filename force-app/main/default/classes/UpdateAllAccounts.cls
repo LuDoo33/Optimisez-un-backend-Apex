@@ -1,17 +1,13 @@
-global class UpdateAllAccounts implements Database.Batchable<sObject>{
-    
-   global Database.QueryLocator start(Database.BatchableContext info){ 
-       //Requeter seulement les comptes qui ont au moins une commande avec le Status 'Ordered'
-       return Database.getQueryLocator('SELECT Id FROM Account');
+public class UpdateAllAccounts {
 
-   }
-    
-   global void execute(Database.BatchableContext info, List<Account> scope){
-       Set<Id> setAccountIds = (new Map<Id,SObject>(scope)).keySet();
-       // AP01Account.updateChiffreAffaire(setAccountIds);
-   }    
-    
-   global void finish(Database.BatchableContext info){     
-       
-   } 
+    // Calcul du revenu total pour un compte donné
+    public static Decimal calculateAccountRevenue(List<OrderItem> orderItems) {
+        Decimal totalRevenue = 0;
+        for (OrderItem orderItem : orderItems) {
+            if (orderItem.UnitPrice != null && orderItem.Quantity != null) {
+                totalRevenue += orderItem.UnitPrice * orderItem.Quantity;
+            }
+        }
+        return totalRevenue;
+    }
 }
