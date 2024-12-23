@@ -8,5 +8,3 @@ public without sharing class MyTeamOrdersController {
         set;
     }
 }
-
-
